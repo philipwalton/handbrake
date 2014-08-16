@@ -1,0 +1,19 @@
+{
+  "name": "handbrake",
+  "bin": "handbrake",
+  "version": "0.0.0",
+  "description": "Batch convert video files",
+  "author" : {
+    "name" : "Philip Walton",
+    "email" : "philip@philipwalton.com",
+    "url" : "http://philipwalton.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/philipwalton/handbrake.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^2.3.0"
+  }
+}
