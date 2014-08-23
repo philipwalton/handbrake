@@ -1,0 +1,68 @@
+#!/usr/bin/env node
+
+var fs = require('fs-extra');
+var glob = require('glob');
+var path = require('path');
+var program = require('commander');
+
+var basePath = path.normalize(__dirname + path.sep + '..');
+var pkg = fs.readJSONSync(path.join(basePath, 'package.json'));
+
+// HandBrakeCLI -i video.mkv -o test.mp4 --drc 2 --gain 4
+
+program
+  .version(pkg.version)
+  .usage('[options]')
+  .option('--source <pattern>',
+    'set which files to convert using a glob pattern')
+  .option('--output [dir]',
+    'set the output directory (defaults to the current directory)', './')
+  .option('--preset [value]',
+    'the native HandBrakeCLI preset value (defaults to "Normal")', 'Normal')
+  .option('--drc [value]',
+    'the native HandBrakeCLI drc value (defaults to 2)', 2)
+  .option('--gain [value]',
+      'the native HandBrakeCLI gain value (defaults to 4)', 4);
+
+program.parse(process.argv);
+
+
+
+// default to showing --help
+if (program.rawArgs.length < 3) program.help();
+
+var files = glob.sync(program.source);
+
+function convertFiles() {
+
+  var file = files.shift();
+
+  if (!file) process.exit();
+
+  var basename = path.basename(file);
+  var extname = path.extname(file);
+  var outname = basename.replace(extname, '');
+
+  var args = [
+    '-i', file,
+    '-o', path.join(program.output, outname + '.mp4'),
+    '--preset', program.preset,
+    '--drc', program.drc,
+    '--gain', program.gain
+  ];
+
+  var spawn = require('child_process').spawn;
+  var cli = spawn('HandBrakeCLI', args);
+
+  cli.stdout.on('data', function (data) {
+    console.log(data.toString());
+  });
+
+  cli.stderr.on('data', function (data) {
+    console.log(data.toString());
+  });
+
+  cli.on('close', convertFiles);
+}
+
+convertFiles();
